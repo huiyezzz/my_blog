@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+  <title>./docs</title>
+  <link rel="stylesheet" href="https://unpkg.com/docute@3/dist/docute.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script src="https://unpkg.com/docute@3/dist/docute.js"></script>
+  <script>
+    docute.init({
+      tocVisibleDepth: 3,
+      nav: [
+    // homepage
+            {title: 'Home', path: '/'},
+    // chinese doc
+            {title: 'git', path: '/git/'},
+            {title: 'vue', path: '/vue/'}
+  ],
+   toc: `
+- [git](/)
+  - [git基础](/git/)
+  - [更多](/git/more)
+- [Vue](/)
+  - [简介](/vue/vuex)
+  - [Vue基本使用](/vue/component)
+  - [路由](/vue/vue-router)
+  - [Vue](/vue/)
+`
+    }
+   )
+  </script>
+</body>
+</html>
