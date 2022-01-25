@@ -5,7 +5,6 @@
  * @LastEditTime: 2021-06-25 12:06:57
  * @FilePath: /vue-press/docs/git-doc/README.md
 -->
-[[toc]]
 
 # git
 
