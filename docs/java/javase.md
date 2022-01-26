@@ -1099,6 +1099,356 @@ RTTI获取类型信息有一个限制：这个类型在编译时必须已知。
 
 
 
+## 注解
+注解是注释的升级版，它可以向编译器、虚拟机等解释说明一些事情。比如我们非常熟悉的@Override就是一种元注解，它的作用是告诉编译器它所注解的方法是重写父类的方法，这样编译器就会去检查父类是否存在这个方法，以及这个方法的签名与父类是否相同。
+
+注解为我们提供了为类/方法/属性/变量添加描述信息的更通用的方式，而这些描述信息对于开发者、自动化工具、Java编译器和Java运行时来说都是有意义的，也就是说他们都能“读懂”注解信息。
+
+### 元注解
+元注解的作用就是负责注解其他注解
+
+Java5.0定义了4个标准的meta-annotation类型，它们被用来提供对其它 annotation类型作说明
+
+#### @Documented
+当一个注解类型被@Documented元注解所描述时，那么无论在哪里使用这个注解，都会被Javadoc工具文档化。
+
+我们来看一下它的定义：
+
+```java
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface Documented {}
+```
+
+我们从以上代码中可以看到，定义注解使用@interface关键字，这就好比我们定义类时使用class关键字，定义接口时使用interface关键字一样，注解也是一种类型。这个元注解被@Documented修饰，表示它本身也会被文档化。 @Retention元注解的值RetentionPolicy.RUNTIME表示@Documented这个注解能保留到运行时；@Target元注解的值ElementType.ANNOTATION_TYPE表示@Documented这个注解只能够用来描述注解类型。
+　　
+#### @Inherited
+表明被修饰的注解类型是自动继承的。具体解释如下：若一个注解类型被Inherited元注解所修饰，则当用户在一个类声明中查询该注解类型时，若发现这个类声明中不包含这个注解类型，则会自动在这个类的父类中查询相应的注解类型，这个过程会被重复，直到该注解类型被找到或是查找完了Object类还未找到。这个元注解的定义如下：
+
+```java
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface Inherited {}
+```
+
+我们可以看到这个元注解类型被@Documented所注解，能够保留到运行时，只能用来描述注解类型。
+
+#### @Retention
+
+我们在上面已经见到个这个元注解，它表示一个注解类型会被保留到什么时候，比如以下代码表示Developer注解会被保留到运行时：
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Developer { String value();}
+```
+
+Retention元注解的定义如下：
+
+```java
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface Retention { RetentionPolicy value();}
+```
+
+我们在使用@Retention时，后面括号里的内容即表示他的取值，从以上定义我们可以看到，取值的类型为RetentionPolicy，这是一个枚举类型，它可以取以下值：
+- SOURCE：表示在编译时这个注解会被移除，不会包含在编译后产生的class文件中；
+- CLASS：表示这个注解会被包含在class文件中，但在运行时会被移除；
+- RUNTIME：表示这个注解会被保留到运行时，在运行时可以JVM访问到，我们可以在运行时通过反射解析这个注解
+
+
+#### @Target
+这个元注解说明了被修饰的注解的应用范围，也就是被修饰的注解可以用来注解哪些程序元素，它的定义如下：
+
+```java
+@Documented@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface Target { ElementType[] value();}
+```
+
+从以上定义我们可以看到它也会保留到运行时，而且它的取值是为ElementType[]类型（一个数组，意思是可以指定多个值），ElementType是一个枚举类型，它可以取以下值：
+- TYPE：表示可以用来注解类、接口、注解类型或枚举类型；
+- PACKAGE：可以用来注解包；
+- PARAMETER：可以用来注解参数；
+- ANNOTATION_TYPE：可以用来注解 注解类型；
+- METHOD：可以用来注解方法；
+- FIELD：可以用来注解属性（包括枚举常量）；
+- CONSTRUCTOR：可以用来注解构造器；
+- LOCAL_VARIABLE：可用来注解局部变量。
+
+### 常见内建注解
+Java本身内建了一些注解，下面我们来介绍一下我们在日常开发中比较常见的注解：@Override、@Deprecated、@SuppressWarnings。相信我们大家或多或少都使用过这三个注解，下面我们一起再重新认识一下它们。
+
+#### @Override注解
+我们先来看一下这个注解类型的定义：
+
+```java
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.SOURCE)
+public @interface Override {}
+
+```
+从它的定义我们可以看到，这个注解可以被用来修饰方法，并且它只在编译时有效，在编译后的class文件中便不再存在。这个注解的作用我们大家都不陌生，那就是告诉编译器被修饰的方法是重写的父类的中的相同签名的方法，编译器会对此做出检查，若发现父类中不存在这个方法或是存在的方法签名不同，则会报错。
+
+#### @Deprecated
+这个注解的定义如下：
+
+```java
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(value={CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE})
+public @interface Deprecated {}
+```
+
+从它的定义我们可以知道，它会被文档化，能够保留到运行时，能够修饰构造方法、属性、局部变量、方法、包、参数、类型。这个注解的作用是告诉编译器被修饰的程序元素已被“废弃”，不再建议用户使用。
+#### @SuppressWarnings
+这个注解我们也比较常用到，先来看下它的定义：
+
+```java
+@Target({TYPE, FIELD, METHOD, PARAMETER, CONSTRUCTOR, LOCAL_VARIABLE})
+@Retention(RetentionPolicy.SOURCE)
+public @interface SuppressWarnings { String[] value();}
+```
+
+它能够修饰的程序元素包括类型、属性、方法、参数、构造器、局部变量，只能存活在源码时，取值为String[]。它的作用是告诉编译器忽略指定的警告信息，它可以取的值如下所示：
+- deprecation：忽略使用了废弃的类或方法时的警告；
+- unchecked：执行了未检查的转换；
+- fallthrough：swich语句款中case忘加break从而直接“落入”下一个case；
+- path：类路径或原文件路径等不存在；
+- serial：可序列化的类缺少serialVersionUID；
+- finally：存在不能正常执行的finally子句；
+- all：以上所有情况产生的警告均忽略。
+
+这个注解的使用示例如下：
+
+```java
+@SuppressWarning(value={"deprecation", "unchecked"})
+public void myMethos() {...}
+```
+
+通过使用以上注解，我们告诉编译器忽略myMethod方法中由于使用了废弃的类或方法或是做了未检查的转换而产生的警告。
+
+
+### 自定义注解
+我们可以创建我们自己的注解类型并使用它。请看下面的示例：
+
+```java
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+@Inheritedpublic
+@interface MethodInfo { String author() default "absfree"; String date(); int version() default 1;}
+```
+
+在自定义注解时，有以下几点需要我们了解：
+- 注解类型是通过”@interface“关键字定义的；
+- 在”注解体“中，所有的方法均没有方法体且只允许public和abstract这两种修饰符号（不加修饰符缺省为public）
+- 注解方法不允许有throws子句；
+- 注解方法的返回值只能为以下几种：原始数据类型, String, Class, 枚举类型；
+
+我们再把上面提到过的@SuppressWarnings这个注解类型的定义拿出来看一下，这个注解类型是系统为我们定义好的，它的定义如下：
+
+```java
+@Target({TYPE, FIELD, METHOD, PARAMETER, CONSTRUCTOR, LOCAL_VARIABLE})
+@Retention(RetentionPolicy.SOURCE)
+public @interface SuppressWarnings { String[] value();}
+```
+
+我们可以看到，它只定义了一个注解方法value()，它的返回值类型为String[]，没有指定默认返回值。我们使用@SuppressWarnings这个注解所用的语法如下：
+
+```java
+@SuppressWarnings(value={"value1", "value2", ...})
+```
+
+也就是在注解类型名称后的括号内为每个注解方法指定返回值就可以使用这个注解。下面我们来看看怎么使用我们自定义的注解类型@MethodInfo：
+
+```java
+public class AnnotationTest {
+ @MethodInfo(author="absfree", date="20160410")
+ public static void main(String[] args) {
+     System.out.println("Using custom annotation...");
+ }
+}
+```
+
+那么现在问题来了，我们使用的自定义注解对于编译器或是虚拟机来说是有意义的吗（编译器或是虚拟机能读懂吗）？显然我们什么都不做的话，编译器或者虚拟机是读不懂我们的自定义注解的。下面我们来介绍以下注解的解析，让编译器或虚拟机能够读懂我们的自定义注解。
+
+
+## JDBC
+### 什么是jdbc
+JDBC（Java DataBase Connectivity)即java数据库连接，是一种用于执行SQL语句的Java API。JDBC是java提供的对多种关系数据库的访问和操作规范，这些规范由java.sql包下面的的类和接口组成，但java自身没有提供具体实现，这组类和接口的具体实现由数据库厂商提供，即jdbc 驱动程序。java程序员能够使用jdbc连接任何提供了jdbc驱动程序的数据库。
+
+### jdbc编程步骤
+- 1：装载数据库驱动
+- 2：获取数据库连接对象Connection
+- 3：通过Connection对象创建statement对象
+- 4：使用Statement执行SQL语句
+- 5：操作结果集ResultSet
+- 6：关闭连接
+
+### jdbc使用示例
+
+```java
+Public static void main(String[] args) {
+           Connection connection = null;
+           PreparedStatement preparedStatement = null;
+           ResultSet resultSet = null;
+          
+           try {
+              //加载数据库驱动类，执行静态初始化，将该驱动注册到驱动管理类
+              Class.forName("com.mysql.jdbc.Driver");
+             
+              //通过驱动管理类获取数据库链接
+              connection =  DriverManager.getConnection("jdbc:mysql://localhost:3306/mybatis?characterEncoding=utf-8", "root", "mysql");
+              //定义sql语句 ?表示占位符
+              String sql = "select * from user where username = ?";
+              //获取预处理statement
+              preparedStatement = connection.prepareStatement(sql);
+              //设置参数，第一个参数为sql语句中参数的序号（从1开始），第二个参数为设置的参数值
+              preparedStatement.setString(1, "王五");
+              //向数据库发出sql执行查询，查询出结果集
+              resultSet =  preparedStatement.executeQuery();
+              //遍历查询结果集
+              while(resultSet.next()){
+                  System.out.println(resultSet.getString("id")+"  "+resultSet.getString("username"));
+              }
+           } catch (Exception e) {
+              e.printStackTrace();
+           }finally{
+              //释放资源
+              if(resultSet!=null){
+                  try {
+                     resultSet.close();
+                  } catch (SQLException e) {
+                     // TODO Auto-generated catch block
+                     e.printStackTrace();
+                  }
+              }
+              if(preparedStatement!=null){
+                  try {
+                     preparedStatement.close();
+                  } catch (SQLException e) {
+                     // TODO Auto-generated catch block
+                     e.printStackTrace();
+                  }
+              }
+              if(connection!=null){
+                  try {
+                     connection.close();
+                  } catch (SQLException e) {
+                     // TODO Auto-generated catch block
+                     e.printStackTrace();
+                  }
+              }
+ 
+           }
+ 
+       }
+```
+
+
+
+### 三种Statement类
+
+- Statement：由createStatement()方法创建，用于发送简单的SQL语句（不带参数）。
+
+- PreparedStatement ：预编译的Statement对象，继承自Statement接口，由preparedStatement(sql)方法创建，用于发送含有一个或多个参数的SQL语句。PreparedStatement对象比Statement对象的效率更高，并且可以防止SQL注入，所以我们一般都使用PreparedStatement。
+
+- CallableStatement：继承自PreparedStatement接口，由方法prepareCall创建，用于调用存储过程。
+
+#### 常用Statement方法
+
+- execute(String sql):可以执行任何原生SQL语句，返回是否有结果集;
+
+- executeQuery(String sql)：运行select语句，返回ResultSet结果集。
+
+- executeUpdate(String sql)：运行insert/update/delete操作，返回更新的行数。
+
+- addBatch(String sql) ：把多条sql语句放到一个批处理中。
+
+- executeBatch()：向数据库发送一批sql语句执行。
+
+
+### 事务
+先调用 Connection 对象的 setAutoCommit(false); 取消自动提交事务。
+然后在所有的 SQL 语句都成功执行后，调用 commit();
+如果在出现异常时，可以调用 rollback();使方法回滚事务
+
+
+### 释放资源
+Connection连接到数据库，statement连接到数据库的可执行程序，Resultset从数据库可执行程序连接到java。释放时应先释放Resultset，然后释放statement，最后释放Connection。
+
+
+
+## 正则表达式
+正则表达式的使用包括：
+1. 字符串的匹配
+2. 字符串的查找
+3. 字符串的替换
+4. 字符串的拆分
+ 
+
+正则表达式表达式为：元字符+量词+元字符+量词...
+
+### 元字符
+- . 代表任意字符，但是不包含换行
+- [\w\W]* 任意字符出现任意次数
+- [0-9] 代表所有的数字
+- [^0-9a-zA-Z] 不包含数字和英文
+- \w 数字、英文、_
+- \W 非数字、英文、_
+- \d 数字
+- \D 非数字
+- \s 空格和换行之类的
+- \S 非空格
+ 
+### 量词
+ 
+- {10} 10次
+- {10,} 10次以上包含10次
+- {2,5} 2-5次，包含2和5
+- * 任意次数={0,}
+- + {1,}
+- ? {0,1}
+- +? 禁止贪婪匹配
+ 
+### 修饰符
+- ^ 强制开头
+- $ 强制结尾
+ 
+### 查找和替换
+
+```java
+   public static void main(String[] args) {
+
+		String string = "class Demo {private String  name;int x;public void set(int x) {this.x=x;}public void get() {set(10);}private int first() {return 0;}}";
+		Pattern pattern = Pattern.compile("([a-zA-Z][a-zA-Z0-9]*)\\s([a-zA-Z][a-zA-Z0-9]*)\\([\\w_0-9\\s]*[\\w_0-9]*\\)");
+		Matcher matcher = pattern.matcher(string);
+		while (matcher.find()) {        //dind()方法找到匹配字符串后，自动移动位置。
+			System.out.print("返回值类型为" + matcher.group(1) + " ");
+			System.out.println("方法名为" + matcher.group(2));
+		}
+	}
+}
+public static void main(String[] args) {
+		String string = "System.out.println(aaa)";
+		Pattern compile = Pattern.compile("\\w*\\.\\w*\\.\\w*\\w(\\()[\\w\\W]+(\\))");
+		Matcher matcher = compile.matcher(string);
+		if (matcher.find()) {
+			System.out.println("输入要替换的输出内容");
+			String info = new Scanner(System.in).nextLine();
+			String string1 = matcher.replaceAll("logger.debug$1" + info + "$2");//将匹配到的字符替换为括号内的                    字符串
+			System.out.println(string1);
+		}
+
+	}
+```
+
+
+
+ 
 
    
 

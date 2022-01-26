@@ -22,7 +22,7 @@
   <script>
 
     docute.init({
-       
+       landing: 'login.html',
        announcement: {
                  type: 'success', // warning | danger | success | primary
                  html: '也不过是想让这世界知道，反复与坚持之后，柔水终成雕刀。'
@@ -36,11 +36,13 @@
               {title: '更多', path: '/git/more'}]
             } ,
             {title: 'java', type: 'dropdown', items: [
-              {type: 'label', title: 'java'},
+              {type: 'label', title: '基础'},
               {title: 'java se', path: '/java/javase'},
               {title: 'java web', path: '/java/javaweb'},
               {type: 'sep',title:'sep'} ]
-            }
+            },
+            {title: '微服务', path: '/microservice/microservice'},
+            {title: '软件架构设计', path: '/framework/framework'}
              
       ],
     plugins: [
