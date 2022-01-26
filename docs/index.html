@@ -1,26 +1,54 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-  <title>./docs</title>
-  <link rel="stylesheet" href="https://unpkg.com/docute@3/dist/docute.css">
-</head>
-<body>
-  <div id="app"></div>
-  <script src="https://unpkg.com/docute@3/dist/docute.js"></script>
+ <head> 
+  <meta charset="utf-8" /> 
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" /> 
+  <link rel="Shortcut Icon" href="./public/icon/book.png"/>
+  <link rel="stylesheet" href="https://unpkg.com/docute@3/dist/docute.css" /> 
+  <!-- <link rel="stylesheet" href="https://unpkg.com/docute/dist/theme-github.css" /> -->
+ </head> 
+ <body> 
+  <div id="app"></div> 
+
+  <script src="https://unpkg.com/docute@3/dist/docute.js"></script> 
+  <script src="https://unpkg.com/prismjs/components/prism-java.js"></script>
+  <script src="https://unpkg.com/prismjs/components/prism-java.min.js"></script>
+  <script src="https://unpkg.com/docute-evanyou"></script>
+  <script src="https://unpkg.com/docute-iframe"></script>
+  <script src="https://unpkg.com/docute-emojify"></script>
+  <script src="https://unpkg.com/docute/plugins/docsearch.js"></script>
+
   <script>
+
     docute.init({
+       
+       announcement: {
+                 type: 'success', // warning | danger | success | primary
+                 html: '也不过是想让这世界知道，反复与坚持之后，柔水终成雕刀。'
+       },
       tocVisibleDepth: 3,
       nav: [
-    // homepage
-            {title: 'Home', path: '/'},
-    // chinese doc
-            {title: 'git', path: '/git/'},
-            {title: 'vue', path: '/vue/'}
+            {title: '设计模式', path: '/design/design'},
+            {title: 'git', type: 'dropdown', items: [
+              {type: 'label', title: 'git'},
+              {title: 'git基本使用', path: '/git/'},
+              {title: '更多', path: '/git/more'}]
+            } ,
+            {title: 'java', type: 'dropdown', items: [
+              {type: 'label', title: 'java'},
+              {title: 'java se', path: '/java/javase'},
+              {title: 'java web', path: '/java/javaweb'},
+              {type: 'sep',title:'sep'} ]
+            }
+             
+      ],
+    plugins: [
+    evanyou(),
+    docuteIframe(),
+    docuteEmojify()
   ],
-   toc: `
+   /*toc: `
 - [git](/)
   - [git基础](/git/)
   - [更多](/git/more)
@@ -36,9 +64,15 @@
   - [合成模式](/design/compound_pt)
   - [装饰器模式](/design/decorator_pt)
   - [代理模式](/design/proxy_pt)
-`
+`,*/
+icons: [{
+    icon: 'github',
+    label: 'Contribute on GitHub',
+    link: 'https://github.com/owner/repo'
+  }]
     }
    )
-  </script>
-</body>
+  </script>  
+
+ </body>
 </html>
